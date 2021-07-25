@@ -76,63 +76,60 @@ const csvLog = (sorted_duplicates) => {
 }
 
 
-const createFiles = (results) => {
-	
-}
-
-
 const run = () => {
-	const filenames = fs.readdirSync('./unprocessed_lead_files') //filenames = fs.readdirSync(directory_name)
 	const directories_created = []
+	const filenames = fs.readdirSync('./unprocessed_lead_files')
+
+	if (!filenames || !filenames.length) console.log("No unprocessed lead files found")
 
 	filenames.forEach(filename => {
 
 		const json = fs.readFileSync(`./unprocessed_lead_files/${filename}`, 'utf8')
 		const leads = JSON.parse(json).leads
 
-		const sorted_duplicates = findDuplicates(leads)
-		const unique_leads = uniqueLeads(sorted_duplicates)
-		const csv_log = csvLog(sorted_duplicates)
+		if (leads && Array.isArray(leads)){
+			const sorted_duplicates = findDuplicates(leads)
+			const csv_log = csvLog(sorted_duplicates)
+			const unique_leads = uniqueLeads(sorted_duplicates)
 
-		// use timestamp in folder name to avoid issue with lead files not having unique names
-		let timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
-		timestamp = timestamp.replace(/[\s,]+/g, '_') // replace spaces and comma with underscore
-		timestamp = timestamp.replace(/\//g, '-') // replace slash with dash
+			// use timestamp in folder name to avoid issue with lead files not having unique names
+			let timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
+			timestamp = timestamp.replace(/[\s,]+/g, '_') // replace spaces and comma with underscore
+			timestamp = timestamp.replace(/\//g, '-') // replace slash with dash
 
-		const name = filename.replace(/\.json$/, '')
-		const directory_name = `${name}_${timestamp}`
+			const base_name = filename.replace(/\.json$/, '')
+			const directory_name = `${base_name}_${timestamp}`
 
-		// make directory 
-		fs.mkdirSync(`./results/${directory_name}`, {recursive: true})
-		directories_created.push(directory_name)
+			// make new directory 
+			fs.mkdirSync(`./results/${directory_name}`, {recursive: true})
+			directories_created.push(directory_name)
 
-		//write original file
-		fs.writeFileSync(
-			`./results/${directory_name}/original_${filename}`,
-			JSON.stringify( { leads} , undefined, '\t' )
-		)
+			// copy original file to new directory
+			fs.copyFileSync(
+				`./unprocessed_lead_files/${filename}`,
+				`./results/${directory_name}/original_${filename}`,
+			)
 
-		// write de-duplicated file
-		fs.writeFileSync(
-			`./results/${directory_name}/${name}.json`, 
-			JSON.stringify( { leads: result } , undefined, '\t' )
-		)
+			// write results
+			fs.writeFileSync(
+				`./results/${directory_name}/result_${filename}`, 
+				JSON.stringify( { leads: unique_leads }, undefined, '\t' )
+			)
 
-		// write log file
-		fs.writeFileSync(
-			`./results/${directory_name}/log.csv`, 
-			"csv data"
-		)
-		
+			// write log file
+			fs.writeFileSync(
+				`./results/${directory_name}/changes_to_${filename}.csv`, 
+				csv_log
+			)
+			
+			// delete original file from .unprocessed_lead_files
+			fs.unlinkSync(`./unprocessed_lead_files/${filename}`)
+		}
 
-		// handle errors if json can't be parsed or leads array not found.
+		else console.log(`leads array not found wihin ${filename}.`)
 	})
 
 	return directories_created
 }
 
-
-
-// run()
-
-module.exports = { run, findDuplicates, csvLog }
+module.exports = { run, findDuplicates, csvLog, uniqueLeads }

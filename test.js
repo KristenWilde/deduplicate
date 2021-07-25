@@ -85,7 +85,10 @@ const leads = [
 ]
 
 // Add leads.js to unprocessed_lead_files directory
-// fs.writeFileSync( './unprocessed_lead_files/leads.json', JSON.stringify(leads, undefined, '\t') )
+fs.writeFileSync(
+	'./unprocessed_lead_files/leads.json',
+	JSON.stringify({ leads }, undefined, '\t') 
+)
 
 // Test finding duplicates
 
@@ -120,28 +123,27 @@ Accepted,wabaj238238jdsnfsj23,bog@bar.com,Fran,Jones,8803 Dark St,2014-05-07T17:
 Accepted,vug789238jdsnfsj23,foo1@bar.com,Blake,Douglas,123 Reach St,2014-05-07T17:33:20+00:00,6`
 )
 
+// Test uniqueLeads result
 
-// Check output (deduplicated leads)
+const unique_leads = Deduplicate.uniqueLeads(duplicates)
 
-// const output = fs.readFileSync(`./results/${directory_names.first}/leads.json`, 'utf8')
-// const output_leads = output && JSON.parse(output) && JSON.parse(output).leads || []
+// Test output files
 
-// console.log("Output contains 4 leads", output_leads.length === 4)
+const directory_names = Deduplicate.run()
 
-// const jkj_lead = output_leads.find(lead => lead._id === 'foo@bar.com') || {}
+const output = fs.readFileSync(`./results/${directory_names[0]}/result_leads.json`, 'utf8')
+const output_leads = output && JSON.parse(output) && JSON.parse(output).leads || []
 
-// console.log("Output contains lead with id jkj238238jdsnfsj23 and email bill@bar.com", jkj_lead.email === "bill@bar.com" )
+console.log("result_leads.json contains 4 leads", output_leads.length === 4)
 
-// const mae_lead = output_leads.find(lead => lead.email === 'mae@bar.com') || {}
+const copy_of_original = fs.readFileSync(`./results/${directory_names[0]}/original_leads.json`, 'utf8')
 
-// console.log("Output contains lead with email mae@bar.com and id belr28238jdsnfsj23", mae_lead._id === "belr28238jdsnfsj23")
+console.log("original_leads.json was created", Boolean(copy_of_original))
 
+const changes_csv = fs.readFileSync(`./results/${directory_names[0]}/changes_to_leads.json.csv`, 'utf8')
 
-// // Check log
+console.log("changes_to_leads.json.csv was created", Boolean(changes_csv))
 
-// const log = fs.readFileSync(`./results/${directory_names.first}/log.json`, 'utf8')
+// Clean up
 
-
-// Remove file from unprocessed_lead_files
-
-// fs.unlinkSync('./unprocessed_lead_files/leads.json')
+// fs.rmdirSync(`./results/${directory_names[0]}`)
