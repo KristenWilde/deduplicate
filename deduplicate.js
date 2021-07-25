@@ -1,9 +1,51 @@
 const fs = require('fs')
 
-const removeDuplicates = (leads) => {
-	// remove the duplicates
+// 
+const findDuplicates = (leads) => {
+	const hash = {}
+	const sorted_duplicates = []
 
-	return leads
+
+	leads.forEach((lead, index) => {
+
+		lead.index = index
+
+		if (hash[lead._id]){
+			hash[lead._id].add(lead)
+		} 
+
+		if (hash[lead.email]){
+			hash[lead.email].add(lead)
+		}
+
+		if ( !hash[lead._id] && !hash[lead.email] ) {
+			const new_set = new Set([lead])
+
+			// point to the same Set with both keys
+			hash[lead._id] = new_set
+			hash[lead.email] = new_set
+		}
+	})
+
+	// convert values array to a set to ensure uniqueness
+	const sets = new Set(Object.values(hash))
+
+	sets.forEach(set => {
+
+		const sorted = Array.from(set).sort((a,b) => {
+			if ( a.entryDate === b.entryDate){
+				return a.index < b.index ? 1 : -1
+			}
+			if ( Date.parse(a.entryDate) < Date.parse(b.entryDate) ){
+				return 1
+			}
+			return -1
+		})
+
+		sorted_duplicates.push(sorted)
+	})
+
+	return sorted_duplicates
 }
 
 
@@ -13,12 +55,11 @@ const run = () => {
 	const directories_created = []
 
 	filenames.forEach(filename => {
-		let duplicates = []
 
 		const json = fs.readFileSync(`./unprocessed_lead_files/${filename}`, 'utf8')
 		const leads = JSON.parse(json).leads
 
-		const result = removeDuplicates(leads)
+		const result = findDuplicates(leads)
 
 		// use timestamp in folder name to avoid issue with lead files not having unique names
 		let timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
@@ -35,19 +76,19 @@ const run = () => {
 		//write original file
 		fs.writeFileSync(
 			`./results/${directory_name}/original_${filename}`,
-			JSON.stringify( { leads} , undefined, '\t'
+			JSON.stringify( { leads} , undefined, '\t' )
 		)
 
 		// write de-duplicated file
 		fs.writeFileSync(
 			`./results/${directory_name}/${name}.json`, 
-			JSON.stringify( { leads: result } , undefined, '\t')
+			JSON.stringify( { leads: result } , undefined, '\t' )
 		)
 
 		// write log file
 		fs.writeFileSync(
-			`./results/${directory_name}/log.txt`, 
-			"This is the log file"
+			`./results/${directory_name}/log.csv`, 
+			"csv data"
 		)
 
 		// handle errors if json can't be parsed or leads array not found.
@@ -60,4 +101,4 @@ const run = () => {
 
 run()
 
-module.exports = { run }
+module.exports = { run, findDuplicates }
