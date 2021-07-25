@@ -1,14 +1,13 @@
 const fs = require('fs')
 
-// 
+// returns array of sorted arrays of duplicates with accepted duplicate in position 0
 const findDuplicates = (leads) => {
 	const hash = {}
 	const sorted_duplicates = []
 
-
 	leads.forEach((lead, index) => {
 
-		lead.index = index
+		lead.index = index // add index for sorting
 
 		if (hash[lead._id]){
 			hash[lead._id].add(lead)
@@ -47,7 +46,39 @@ const findDuplicates = (leads) => {
 
 	return sorted_duplicates
 }
+ 
+const uniqueLeads = (sorted_duplicates) => {
+	return sorted_duplicates.map(duplicates => {
+		// copy first lead and remove index property
+		const lead = { ...duplicates[0] }
+		delete lead.index
+		
+		return lead
+	})
+}
 
+const csvLog = (sorted_duplicates) => {
+	let result = "Fields,_id,email,firstName,lastName,address,entryDate,index\n"
+	
+	result += sorted_duplicates.map(array => 
+
+		array.map((lead, index) => {
+			let accepted = index === 0 ? 'Accepted' : 'Removed'
+
+			let data = Object.values(lead).join(",")
+
+			return `${accepted},${data}`
+		}).join("\n")
+
+	).join("\n\n")
+
+	return result
+}
+
+
+const createFiles = (results) => {
+	
+}
 
 
 const run = () => {
@@ -59,7 +90,9 @@ const run = () => {
 		const json = fs.readFileSync(`./unprocessed_lead_files/${filename}`, 'utf8')
 		const leads = JSON.parse(json).leads
 
-		const result = findDuplicates(leads)
+		const sorted_duplicates = findDuplicates(leads)
+		const unique_leads = uniqueLeads(sorted_duplicates)
+		const csv_log = csvLog(sorted_duplicates)
 
 		// use timestamp in folder name to avoid issue with lead files not having unique names
 		let timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
@@ -90,6 +123,7 @@ const run = () => {
 			`./results/${directory_name}/log.csv`, 
 			"csv data"
 		)
+		
 
 		// handle errors if json can't be parsed or leads array not found.
 	})
@@ -99,6 +133,6 @@ const run = () => {
 
 
 
-run()
+// run()
 
-module.exports = { run, findDuplicates }
+module.exports = { run, findDuplicates, csvLog }

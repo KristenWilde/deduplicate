@@ -87,12 +87,40 @@ const leads = [
 // Add leads.js to unprocessed_lead_files directory
 // fs.writeFileSync( './unprocessed_lead_files/leads.json', JSON.stringify(leads, undefined, '\t') )
 
-// Run deduplicate
+// Test finding duplicates
 
-// const directory_names = Deduplicate.run()
 const duplicates = Deduplicate.findDuplicates(leads)
 
-console.log(duplicates)
+console.log("Found 4 leads", duplicates.length === 4)
+
+const jkj_array = duplicates.find(array => array[0]._id === "jkj238238jdsnfsj23") || []
+
+console.log("Found 6 duplicated records for id jkj238238jdsnfsj23", jkj_array.length === 6)
+
+console.log("First jkj238238jdsnfsj23 has email bill@bar.com", jkj_array[0].email === "bill@bar.com" )
+
+// Test csvLog result
+
+const csv_log = Deduplicate.csvLog(duplicates)
+
+console.log("CSV log output is correct", csv_log.trim() === 
+`Fields,_id,email,firstName,lastName,address,entryDate,index
+Accepted,jkj238238jdsnfsj23,bill@bar.com,John,Smith,888 Mayberry St,2014-05-07T17:33:20+00:00,9
+Removed,wuj08238jdsnfsj23,foo@bar.com,Micah,Valmer,123 Street St,2014-05-07T17:33:20+00:00,7
+Removed,qest38238jdsnfsj23,foo@bar.com,John,Smith,123 Street St,2014-05-07T17:32:20+00:00,5
+Removed,sel045238jdsnfsj23,foo@bar.com,John,Smith,123 Street St,2014-05-07T17:32:20+00:00,4
+Removed,jkj238238jdsnfsj23,coo@bar.com,Ted,Jones,456 Neat St,2014-05-07T17:32:20+00:00,3
+Removed,jkj238238jdsnfsj23,foo@bar.com,John,Smith,123 Street St,2014-05-07T17:30:20+00:00,0
+
+Accepted,belr28238jdsnfsj23,mae@bar.com,Tallulah,Smith,123 Water St,2014-05-07T17:33:20+00:00,8
+Removed,edu45238jdsnfsj23,mae@bar.com,Ted,Masters,44 North Hampton St,2014-05-07T17:31:20+00:00,1
+
+Accepted,wabaj238238jdsnfsj23,bog@bar.com,Fran,Jones,8803 Dark St,2014-05-07T17:31:20+00:00,2
+
+Accepted,vug789238jdsnfsj23,foo1@bar.com,Blake,Douglas,123 Reach St,2014-05-07T17:33:20+00:00,6`
+)
+
+
 // Check output (deduplicated leads)
 
 // const output = fs.readFileSync(`./results/${directory_names.first}/leads.json`, 'utf8')
@@ -114,4 +142,6 @@ console.log(duplicates)
 // const log = fs.readFileSync(`./results/${directory_names.first}/log.json`, 'utf8')
 
 
+// Remove file from unprocessed_lead_files
 
+// fs.unlinkSync('./unprocessed_lead_files/leads.json')
