@@ -1,3 +1,3 @@
-const Deduplicate = require('deduplicate.js')
+const Deduplicate = require('./deduplicate.js')
 
 Deduplicate.run()
