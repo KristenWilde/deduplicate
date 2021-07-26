@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-// returns array of sorted arrays of duplicates with accepted duplicate in position 0
+// takes array of leads, returns array of sorted arrays of duplicates with accepted duplicate in position 0
 const findDuplicates = (leads) => {
 	const hash = {}
 	const sorted_duplicates = []
@@ -9,24 +9,43 @@ const findDuplicates = (leads) => {
 
 		lead.index = index // add index for sorting
 
-		if (hash[lead._id]){
+		if (hash[lead._id] && hash[lead.email]){
 			hash[lead._id].add(lead)
-		} 
 
-		if (hash[lead.email]){
-			hash[lead.email].add(lead)
+			// put all leads so far into the id set and
+			// point all ids and emails to that set
+			hash[lead.email].forEach(other_lead => {
+				hash[lead._id].add(other_lead)
+
+				hash[other_lead.email] = hash[lead._id]
+				hash[other_lead._id] = hash[lead._id]
+			})
 		}
 
-		if ( !hash[lead._id] && !hash[lead.email] ) {
-			const new_set = new Set([lead])
+		else {
 
-			// point to the same Set with both keys
-			hash[lead._id] = new_set
-			hash[lead.email] = new_set
+			if (hash[lead._id]){
+				hash[lead._id].add(lead)
+			} 
+
+			if (hash[lead.email]){
+				hash[lead.email].add(lead)
+			}
+
+			if ( !hash[lead._id] && !hash[lead.email] ) {
+				const new_set = new Set([lead])
+
+				// point to the same new set with both keys
+				hash[lead._id] = new_set
+				hash[lead.email] = new_set
+			}
 		}
 	})
 
-	// convert values array to a set to ensure uniqueness
+	console.log('jkj', Array.from(hash.jkj238238jdsnfsj23))
+	console.log('foo@bar', Array.from(hash['foo@bar.com']))
+
+	// put values in a set to ensure uniqueness
 	const sets = new Set(Object.values(hash))
 
 	sets.forEach(set => {
@@ -93,7 +112,7 @@ const run = () => {
 			const unique_leads = uniqueLeads(sorted_duplicates)
 
 			// use timestamp in folder name to avoid issue with lead files not having unique names
-			let timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })
+			let timestamp = new Date().toLocaleString()
 			timestamp = timestamp.replace(/[\s,]+/g, '_') // replace spaces and comma with underscore
 			timestamp = timestamp.replace(/\//g, '-') // replace slash with dash
 
