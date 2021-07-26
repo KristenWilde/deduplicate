@@ -42,9 +42,6 @@ const findDuplicates = (leads) => {
 		}
 	})
 
-	console.log('jkj', Array.from(hash.jkj238238jdsnfsj23))
-	console.log('foo@bar', Array.from(hash['foo@bar.com']))
-
 	// put values in a set to ensure uniqueness
 	const sets = new Set(Object.values(hash))
 
@@ -143,6 +140,8 @@ const run = () => {
 			
 			// delete original file from .unprocessed_lead_files
 			fs.unlinkSync(`./unprocessed_lead_files/${filename}`)
+
+			console.log(`Deduplication completed. \nSee results in results/${directory_name}`)
 		}
 
 		else console.log(`leads array not found wihin ${filename}.`)
